@@ -35,15 +35,17 @@ Detail:
 
 @return none
 */
-cv::Mat MainForm::Dilation(const cv::Mat binImg) {
+void MainForm::Dilation(const cv::Mat binImg) {
+	// Original image holds dilation value
 	cv::Mat l_dilationImg(binImg.rows, binImg.cols, CV_8UC1);
+	//// Expand the size of the image to SE size 
+	cv::Mat l_tempDilationImg(binImg.rows + (2*g_SEInfo.size), binImg.cols + (2*g_SEInfo.size), CV_8UC1);
 
-	for (int row = 0; row < binImg.rows; row++) {
-		for (int col = 0; col < binImg.cols; col++) {
-			// Set dilation image to black image
-			l_dilationImg.at<uint8_t>(row, col) = 0;
-		}
-	}
+	// Set dilation image to black image
+	setDefaultImage(l_dilationImg);
+	//// Set temp dilation image to black image
+	setDefaultImage(l_tempDilationImg);
+
 	// Check type of SE
 	switch (g_SEInfo.type) {
 	/// Cross shape size = 5:
@@ -54,82 +56,45 @@ cv::Mat MainForm::Dilation(const cv::Mat binImg) {
 	/// 		|*|
 	// Type of SE is Cross
 	case CROSS:
-		for (int row = g_SEInfo.size; row < binImg.rows - g_SEInfo.size; row++) {
-			for (int col = g_SEInfo.size; col < binImg.cols - g_SEInfo.size; col++) {
+		//for (int row = g_SEInfo.size; row < binImg.rows - g_SEInfo.size; row++) {
+		//	for (int col = g_SEInfo.size; col < binImg.cols - g_SEInfo.size; col++) {
 
-				if (binImg.at<uint8_t>(row, col) == 255) { //check current pixel == 255
+		//		if (binImg.at<uint8_t>(row, col) == 255) { //check current pixel == 255
 
-					for (int SE_row = -1; SE_row <= 1; SE_row++) {
-						for (int SE_col = -1; SE_col <= 1; SE_col++) {
-							l_dilationImg.at<uint8_t>(row + SE_row, col + SE_col) = 255; //set current pixel to 0
-						}
-					}
+		//			for (int SE_row = -1; SE_row <= 1; SE_row++) {
+		//				for (int SE_col = -1; SE_col <= 1; SE_col++) {
+		//					l_tempDilationImg.at<uint8_t>(row + SE_row, col + SE_col) = 255; //set current pixel to 0
+		//				}
+		//			}
 
-				}
-				else {
-					//do nothing
-				}
+		//		}
+		//		else {
+		//			//do nothing
+		//		}
 
-			}
-		}
+		//	}
+		//}
 		break;
 	// Type of SE is Square
 	case SQUARE:
+
 		// Handle the pixels inside the image
-		for (int row = g_SEInfo.size; row < binImg.rows - g_SEInfo.size; ++row) {
-			for (int col = g_SEInfo.size; col < binImg.cols - g_SEInfo.size; ++col) {
+		for (int isMatrixRow = 0; isMatrixRow < binImg.rows; ++isMatrixRow) {
+			for (int isMatrixCol = 0; isMatrixCol < binImg.cols; ++isMatrixCol) {
+
 				// If current pixel is 255 then set surrounding pixels to 255
-				if (binImg.at<uint8_t>(row, col) == 255) {
+				if (binImg.at<uint8_t>(isMatrixRow, isMatrixCol) == 255) {
 
 					for (int SE_row = -g_SEInfo.size; SE_row <= g_SEInfo.size; ++SE_row) {
 						for (int SE_col = -g_SEInfo.size; SE_col <= g_SEInfo.size; ++SE_col) {
+
+							//// Convert rows and columns to dilation image
+							//int rowOfDilationImg = isMatrixRow + g_SEInfo.size;
+							//int colOfDilationImg = isMatrixCol + g_SEInfo.size;
+
 							// Set current pixel to 255
-							l_dilationImg.at<uint8_t>(row + SE_row, col + SE_col) = 255;
-						}
-					}
+							l_tempDilationImg.at<uint8_t>(isMatrixRow + g_SEInfo.size + SE_row, isMatrixCol + g_SEInfo.size + SE_col) = 255;
 
-				}
-				// Else meaning current pixel is 0 then do nothing
-				else {
-					// Do nothing
-				}
-
-			}
-		}
-		
-		// Handle the pixels at the border of the image
-		// Upper border
-		for (int row = 0; row < g_SEInfo.size; ++row) {
-			for (int col = g_SEInfo.size; col < binImg.cols - g_SEInfo.size; ++col) {
-				// If current pixel is 255 then set surrounding pixels to 255
-				if (binImg.at<uint8_t>(row, col) == 255) {
-
-					for (int SE_row = -row; SE_row <= g_SEInfo.size; ++SE_row) {
-						for (int SE_col = -g_SEInfo.size; SE_col <= g_SEInfo.size; ++SE_col) {
-							// Set current pixel to 255
-							l_dilationImg.at<uint8_t>(row + SE_row, col + SE_col) = 255;
-						}
-					}
-
-				}
-				// Else meaning current pixel is 0 then do nothing
-				else {
-					// Do nothing
-				}
-
-			}
-		}
-
-		// Bottom border
-		for (int row = (binImg.rows - g_SEInfo.size); row < binImg.rows; ++row) {
-			for (int col = g_SEInfo.size; col < binImg.cols - g_SEInfo.size; ++col) {
-				// If current pixel is 255 then set surrounding pixels to 255
-				if (binImg.at<uint8_t>(row, col) == 255) {
-
-					for (int SE_row = -g_SEInfo.size; SE_row <= ((binImg.rows - 1U) - row); ++SE_row) { // (binImg - 1U) is size of image
-						for (int SE_col = -g_SEInfo.size; SE_col <= g_SEInfo.size; ++SE_col) {
-							// Set current pixel to 255
-							l_dilationImg.at<uint8_t>(row + SE_row, col + SE_col) = 255;
 						}
 					}
 
@@ -147,12 +112,40 @@ cv::Mat MainForm::Dilation(const cv::Mat binImg) {
 		break;
 	}
 
-	namedWindow("Dilation image", WINDOW_AUTOSIZE); // Create a window for display.
-	imshow("Dilation image", l_dilationImg);         // Show our image inside it.
+	// Save result to global of dilation image
+	for (int isMatrixRow = 0; isMatrixRow < l_dilationImg.rows; ++isMatrixRow) {
+		for (int isMatrixCol = 0; isMatrixCol < l_dilationImg.cols; ++isMatrixCol) {
 
-	return l_dilationImg;
+			l_dilationImg.at<uint8_t>(isMatrixRow, isMatrixCol) = l_tempDilationImg.at<uint8_t>(isMatrixRow + g_SEInfo.size, isMatrixCol + g_SEInfo.size);
+
+		}
+	}
+
+	namedWindow("Dilation image", WINDOW_AUTOSIZE); // Create a window for display.
+	cv::imshow("Dilation image", l_dilationImg);         // Show our image inside it.
+	namedWindow("temp Dilation image", WINDOW_AUTOSIZE); // Create a window for display.
+	cv::imshow("temp Dilation image", l_tempDilationImg);         // Show our image inside it.
 
 } // Func: Dilation()
+
+/** brief set image to black image
+
+@param row row of image
+@param col col of image
+@return cv::Mat black image
+*/
+void MainForm::setDefaultImage(cv::Mat& img){
+
+	for (int isMatrixRow = 0; isMatrixRow < img.rows; ++isMatrixRow) {
+		for (int isMatrixCol = 0; isMatrixCol < img.cols; ++isMatrixCol) {
+
+			// Set image to black image
+			img.at<uint8_t>(isMatrixRow, isMatrixCol) = 0;
+
+		}
+	}
+	
+}
 
 /** brief Read image from browser and display in picture box
 
@@ -181,7 +174,7 @@ System::Void MainForm::clickLoadImageButton(System::Object^  sender, System::Eve
 
 	// Display binary image
 	namedWindow("Binary image", WINDOW_AUTOSIZE); // Create a window for display.
-	imshow("Binary image", g_binaryImage);         // Show our image inside it.
+	cv::imshow("Binary image", g_binaryImage);         // Show our image inside it.
 
 	// Calc dilation and show to pic box
 	MainForm::Dilation(g_binaryImage);

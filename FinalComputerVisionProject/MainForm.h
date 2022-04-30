@@ -3,6 +3,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp> 
+#include <opencv2/opencv.hpp>
 
 namespace FinalComputerVisionProject {
 
@@ -203,7 +204,8 @@ namespace FinalComputerVisionProject {
 #pragma endregion
 		// private function for handling image
 	private: System::Void clickLoadImageButton(System::Object^  sender, System::EventArgs^  e);
-	private: cv::Mat Dilation(const cv::Mat);
+	private: void Dilation(const cv::Mat);
+	private: void setDefaultImage(cv::Mat&);
 	private: System::Void clickCrossButton(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void clickSquareButton(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void scrollSETrackBar(System::Object^  sender, System::EventArgs^  e);
