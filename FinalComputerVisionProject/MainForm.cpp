@@ -48,33 +48,6 @@ void MainForm::Dilation(const cv::Mat binImg) {
 
 	// Check type of SE
 	switch (g_SEInfo.type) {
-	/// Cross shape size = 5:
-	///			|*|
-	///		  |*|*|*|
-	///		|*|*|*|*|*|
-	///		  |*|*|*|
-	/// 		|*|
-	// Type of SE is Cross
-	case CROSS:
-		//for (int row = g_SEInfo.size; row < binImg.rows - g_SEInfo.size; row++) {
-		//	for (int col = g_SEInfo.size; col < binImg.cols - g_SEInfo.size; col++) {
-
-		//		if (binImg.at<uint8_t>(row, col) == 255) { //check current pixel == 255
-
-		//			for (int SE_row = -1; SE_row <= 1; SE_row++) {
-		//				for (int SE_col = -1; SE_col <= 1; SE_col++) {
-		//					l_tempDilationImg.at<uint8_t>(row + SE_row, col + SE_col) = 255; //set current pixel to 0
-		//				}
-		//			}
-
-		//		}
-		//		else {
-		//			//do nothing
-		//		}
-
-		//	}
-		//}
-		break;
 	// Type of SE is Square
 	case SQUARE:
 
@@ -88,13 +61,73 @@ void MainForm::Dilation(const cv::Mat binImg) {
 					for (int SE_row = -g_SEInfo.size; SE_row <= g_SEInfo.size; ++SE_row) {
 						for (int SE_col = -g_SEInfo.size; SE_col <= g_SEInfo.size; ++SE_col) {
 
-							//// Convert rows and columns to dilation image
-							//int rowOfDilationImg = isMatrixRow + g_SEInfo.size;
-							//int colOfDilationImg = isMatrixCol + g_SEInfo.size;
+							// Convert rows and columns to dilation image
+							int rowOfDilationImg = isMatrixRow + g_SEInfo.size;
+							int colOfDilationImg = isMatrixCol + g_SEInfo.size;
 
 							// Set current pixel to 255
-							l_tempDilationImg.at<uint8_t>(isMatrixRow + g_SEInfo.size + SE_row, isMatrixCol + g_SEInfo.size + SE_col) = 255;
+							l_tempDilationImg.at<uint8_t>(rowOfDilationImg + SE_row, colOfDilationImg + SE_col) = 255;
 
+						}
+					}
+
+				}
+				// Else meaning current pixel is 0 then do nothing
+				else {
+					// Do nothing
+				}
+
+			}
+		}
+
+		break;
+	/// Cross shape size = 3:
+	///			|*|
+	///		  |*|*|*|
+	///		|*|*|*|*|*|
+	///	  |*|*|*|*|*|*|*|
+	///		|*|*|*|*|*|
+	///		  |*|*|*|
+	/// 		|*|
+	// Type of SE is Cross
+	case CROSS:
+		// Handle the pixels inside the image
+		for (int isMatrixRow = 0; isMatrixRow < binImg.rows; ++isMatrixRow) {
+			for (int isMatrixCol = 0; isMatrixCol < binImg.cols; ++isMatrixCol) {
+
+				// If current pixel is 255 then set surrounding pixels to 255
+				if (binImg.at<uint8_t>(isMatrixRow, isMatrixCol) == 255) {
+
+					for (int SE_row = -g_SEInfo.size; SE_row <= 0; ++SE_row) {
+
+						int space = -g_SEInfo.size - SE_row - 1;
+
+						// Example: g_SEInfo.size = 3
+						// Check for:
+						// -3		  |*|
+						// -2		|*|*|*|
+						// -1	  |*|*|*|*|*|
+						//	0	|*|*|*|*|*|*|*|
+						// Set pixels in SE to 255
+						for (int SE_col = space + 1; SE_col <= space + (2 * (-space) - 1); ++SE_col) {
+							// Set current pixel to 255
+							l_tempDilationImg.at<uint8_t>(isMatrixRow + g_SEInfo.size + SE_row, isMatrixCol + g_SEInfo.size + SE_col) = 255;
+						}
+					}
+
+
+					for (int SE_row = 1; SE_row <= g_SEInfo.size; ++SE_row) {
+						int space = g_SEInfo.size - SE_row;
+
+						// Example: g_SEInfo.size = 3
+						// Check for:
+						// 1	|*|*|*|*|*|
+						// 2	  |*|*|*|
+						// 3	    |*|
+						// Set pixels in SE to 255
+						for (int cross = -space; cross < -space + (2 * space + 1); ++cross) {
+							// Set current pixel to 255
+							l_tempDilationImg.at<uint8_t>(isMatrixRow + g_SEInfo.size + SE_row, isMatrixCol + g_SEInfo.size + cross) = 255;
 						}
 					}
 
@@ -212,10 +245,14 @@ float min(float x, float y)
 
 System::Void MainForm::clickCrossButton(System::Object^  sender, System::EventArgs^  e) {
 	g_SEInfo.type = CROSS;
+	// Calc dilation and show to pic box
+	MainForm::Dilation(g_binaryImage);
 }
 
 System::Void MainForm::clickSquareButton(System::Object^  sender, System::EventArgs^  e) {
 	g_SEInfo.type = SQUARE;
+	// Calc dilation and show to pic box
+	MainForm::Dilation(g_binaryImage);
 }
 
 System::Void MainForm::scrollSETrackBar(System::Object^  sender, System::EventArgs^  e) {

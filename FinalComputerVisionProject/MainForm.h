@@ -164,7 +164,7 @@ namespace FinalComputerVisionProject {
 			// 
 			this->m_isSESizeTrackBar->AutoSize = false;
 			this->m_isSESizeTrackBar->Location = System::Drawing::Point(500, 60);
-			this->m_isSESizeTrackBar->Maximum = 5;
+			this->m_isSESizeTrackBar->Maximum = 7;
 			this->m_isSESizeTrackBar->Minimum = 1;
 			this->m_isSESizeTrackBar->Name = L"m_isSESizeTrackBar";
 			this->m_isSESizeTrackBar->Size = System::Drawing::Size(270, 50);
