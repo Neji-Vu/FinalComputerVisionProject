@@ -20,7 +20,7 @@ namespace FinalComputerVisionProject {
 
 	enum SEType {
 		SQUARE,
-		CROSS
+		DIAMOND
 	};
 
 	struct StructuringElement {
@@ -33,7 +33,12 @@ namespace FinalComputerVisionProject {
 	cv::Mat g_grayImage;
 	cv::Mat g_binaryImage;
 
-	StructuringElement g_SEInfo { SQUARE, 3 };
+	cv::Mat g_dilationImage;
+	cv::Mat g_erosionImage;
+	cv::Mat g_openingImage;
+	cv::Mat g_closingImage;
+
+	StructuringElement g_SEInfo { SQUARE, 1 };
 
 	/// <summary>
 	/// Summary for MyForm
@@ -145,7 +150,7 @@ namespace FinalComputerVisionProject {
 			this->m_isCrossButton->Name = L"m_isCrossButton";
 			this->m_isCrossButton->Size = System::Drawing::Size(120, 40);
 			this->m_isCrossButton->TabIndex = 5;
-			this->m_isCrossButton->Text = L"Cross";
+			this->m_isCrossButton->Text = L"Diamond";
 			this->m_isCrossButton->UseVisualStyleBackColor = true;
 			this->m_isCrossButton->Click += gcnew System::EventHandler(this, &MainForm::clickCrossButton);
 			// 
@@ -204,8 +209,12 @@ namespace FinalComputerVisionProject {
 #pragma endregion
 		// private function for handling image
 	private: System::Void clickLoadImageButton(System::Object^  sender, System::EventArgs^  e);
-	private: void Dilation(const cv::Mat);
-	private: void setDefaultImage(cv::Mat&);
+	private: void setColorImage(cv::Mat&, const uint8_t);
+	private: cv::Mat Dilation(const cv::Mat);
+	private: cv::Mat Erosion(const cv::Mat);
+	private: cv::Mat Opening(const cv::Mat);
+	private: cv::Mat Closing(const cv::Mat);
+	private: void showImage(void);
 	private: System::Void clickCrossButton(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void clickSquareButton(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void scrollSETrackBar(System::Object^  sender, System::EventArgs^  e);

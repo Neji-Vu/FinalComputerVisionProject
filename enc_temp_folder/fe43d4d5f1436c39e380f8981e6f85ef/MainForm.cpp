@@ -38,7 +38,7 @@ Detail:
 cv::Mat MainForm::Dilation(const cv::Mat binImg) {
 	// Original image holds dilation value
 	cv::Mat l_dilationImg(binImg.rows, binImg.cols, CV_8UC1);
-	// Expand the size of the image to SE size 
+	//// Expand the size of the image to SE size 
 	cv::Mat l_tempDilationImg(binImg.rows + (2*g_SEInfo.size), binImg.cols + (2*g_SEInfo.size), CV_8UC1);
 
 	// Set dilation image to black image
